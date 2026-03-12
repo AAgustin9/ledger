@@ -116,11 +116,9 @@ export default function ThingsPurchases({ things, setThings }) {
                     className="row-item fade-in month-row"
                     style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : 'none' }}
                   >
-                    {entry.day ? (
-                      <span className="mono" style={{ fontSize: 13, color: 'var(--color-text-dim)', minWidth: 28 }}>
-                        {entry.day}
-                      </span>
-                    ) : null}
+                    <span className="mono" style={{ fontSize: 13, color: 'var(--color-text-dim)' }}>
+                      {entry.day || ''}
+                    </span>
                     <span className="row-title">{entry.title}</span>
                     <span className="mono month-row-amount">{fmt(entry.amount)}</span>
                     <div className="row-action">
