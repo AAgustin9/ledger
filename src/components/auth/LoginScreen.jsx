@@ -30,10 +30,7 @@ export default function LoginScreen() {
 
   const handleGoogle = async () => {
     setError(null);
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    });
+    await supabase.auth.signInWithOAuth({ provider: 'google' });
   };
 
   const inputStyle = {
