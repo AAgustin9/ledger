@@ -27,20 +27,35 @@ export default function Dashboard({ income, things, foodOrders }) {
     let paid = 0;
 
     foodOrders.forEach((order) => {
-      myFoodCost += parseFloat(order.myFoodCost || 0);
+      const hasPaidBy = !!order.paidBy;
+
+      if (!hasPaidBy) {
+        // Normal case: app owner paid
+        myFoodCost += parseFloat(order.myFoodCost || 0);
+      }
+
       const fee = parseFloat(order.deliveryFee || 0);
       const participants = order.participants || [];
-      const split = participants.length + 1;
+      const iOrdered = parseFloat(order.myFoodCost || 0) > 0;
+      const split = participants.length + (iOrdered ? 1 : 0);
 
-      participants.forEach((participant) => {
-        const participantOwes = parseFloat(participant.foodCost || 0) + fee / split;
+      if (hasPaidBy) {
+        // Third party paid: app owner owes the payer their share
+        const myShare = parseFloat(order.myFoodCost || 0) + (iOrdered && split > 0 ? fee / split : 0);
+        // This counts as a liability (subtracted from balance)
+        myFoodCost -= myShare; // negative value represents what app owner owes
+      } else {
+        // Normal case: count participant payments
+        participants.forEach((participant) => {
+          const participantOwes = parseFloat(participant.foodCost || 0) + fee / split;
 
-        if (participant.paid) {
-          paid += participantOwes;
-        } else {
-          owed += participantOwes;
-        }
-      });
+          if (participant.paid) {
+            paid += participantOwes;
+          } else {
+            owed += participantOwes;
+          }
+        });
+      }
     });
 
     return { myFood: myFoodCost, othersOwed: owed, collected: paid };

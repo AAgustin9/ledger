@@ -7,6 +7,7 @@ import TableHead from '../ui/TableHead';
 
 export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDelete }) {
   const [newName, setNewName] = useState('');
+  const [showPaidBy, setShowPaidBy] = useState(!!order.paidBy);
 
   const participants = order.participants || [];
   const fee = parseFloat(order.deliveryFee || 0);
@@ -15,7 +16,12 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
   const myDeliveryShare = iOrdered && split > 0 ? fee / split : 0;
   const myTotal = parseFloat(order.myFoodCost || 0) + myDeliveryShare;
   const isOld = daysSince(order.date) > 7;
-  const unpaidParticipants = participants.filter((participant) => !participant.paid);
+  const hasPaidBy = !!order.paidBy;
+
+  // If someone else paid, only unpaid participants matter; otherwise all unpaid
+  const unpaidParticipants = hasPaidBy
+    ? participants.filter((participant) => !participant.paid)
+    : participants.filter((participant) => !participant.paid);
   const unpaidAmount = unpaidParticipants.reduce(
     (sum, participant) => sum + parseFloat(participant.foodCost || 0) + fee / split,
     0
@@ -147,6 +153,68 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
             ))}
           </div>
 
+          <label className="field-group" style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={showPaidBy}
+                onChange={(event) => {
+                  setShowPaidBy(event.target.checked);
+                  if (!event.target.checked) {
+                    patchOrder({ paidBy: null });
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              />
+              <span className="field-label">Someone else paid for this</span>
+            </div>
+          </label>
+
+          {showPaidBy && (
+            <div className="food-order-fields">
+              <label className="field-group">
+                <span className="field-label">Who paid?</span>
+                <Input
+                  placeholder="e.g. Alex…"
+                  value={order.paidBy?.name || ''}
+                  onChange={(event) =>
+                    patchOrder({
+                      paidBy: {
+                        name: event.target.value,
+                        amount: order.paidBy?.amount || parseFloat(order.totalAmount || 0),
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label className="field-group">
+                <span className="field-label">Amount Paid</span>
+                <Input
+                  type="number"
+                  value={order.paidBy?.amount || ''}
+                  placeholder="0.00"
+                  onChange={(event) =>
+                    patchOrder({
+                      paidBy: {
+                        name: order.paidBy?.name || '',
+                        amount: parseFloat(event.target.value || 0),
+                      },
+                    })
+                  }
+                />
+              </label>
+            </div>
+          )}
+
+          {hasPaidBy && (
+            <div style={{ marginBottom: 16, padding: '8px 12px', backgroundColor: 'rgba(196,169,76,0.08)', borderRadius: 4 }}>
+              <span style={{ fontSize: 13 }}>
+                Paid by <span className="mono accent-text">{order.paidBy.name}</span> · {' '}
+                <span className="mono accent-text">{fmt(order.paidBy.amount)}</span>
+              </span>
+            </div>
+          )}
+
           <div className="food-summary-box">
             <span>
               My delivery share:{' '}
@@ -168,7 +236,13 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
           {participants.length > 0 ? (
             <div className="table-shell compact-shell">
               <TableHead
-                cols={['Person', 'Food', 'Owes You', 'Status', '']}
+                cols={[
+                  'Person',
+                  'Food',
+                  hasPaidBy ? `Owes ${order.paidBy.name}` : 'Owes You',
+                  'Status',
+                  '',
+                ]}
                 widths={['1fr', '110px', '120px', '100px', '34px']}
               />
               {participants.map((participant, index) => {
