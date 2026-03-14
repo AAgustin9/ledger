@@ -18,10 +18,10 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
   const isOld = daysSince(order.date) > 7;
   const hasPaidBy = !!order.paidBy;
 
-  // If someone else paid, only unpaid participants matter; otherwise all unpaid
-  const unpaidParticipants = hasPaidBy
-    ? participants.filter((participant) => !participant.paid)
-    : participants.filter((participant) => !participant.paid);
+  const payerName = order.paidBy?.name?.trim().toLowerCase();
+  const isPayerParticipant = (p) => hasPaidBy && !!payerName && p.name.trim().toLowerCase() === payerName;
+
+  const unpaidParticipants = participants.filter((p) => !p.paid && !isPayerParticipant(p));
   const unpaidAmount = unpaidParticipants.reduce(
     (sum, participant) => sum + parseFloat(participant.foodCost || 0) + fee / split,
     0
@@ -247,7 +247,8 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
               />
               {participants.map((participant, index) => {
                 const owes = parseFloat(participant.foodCost || 0) + fee / split;
-                const participantAlert = !participant.paid && isOld;
+                const isPayer = isPayerParticipant(participant);
+                const participantAlert = !participant.paid && !isPayer && isOld;
 
                 return (
                   <div
@@ -259,7 +260,7 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
                       background: participantAlert ? 'rgba(192,57,43,0.05)' : 'transparent',
                     }}
                   >
-                    <span className={`row-title ${participant.paid ? 'muted-text' : ''}`}>{participant.name}</span>
+                    <span className={`row-title ${participant.paid || isPayer ? 'muted-text' : ''}`}>{participant.name}</span>
                     <Input
                       type="number"
                       value={participant.foodCost || ''}
@@ -268,16 +269,20 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
                       onChange={(event) => updateParticipant(participant.id, { foodCost: event.target.value })}
                     />
                     <span
-                      className={`mono participant-owes ${participant.paid ? 'muted-text struck-text' : participantAlert ? 'danger-text' : 'accent-text'}`}
+                      className={`mono participant-owes ${participant.paid || isPayer ? 'muted-text struck-text' : participantAlert ? 'danger-text' : 'accent-text'}`}
                     >
                       {fmt(owes)}
                     </span>
+                    {isPayer ? (
+                      <span className="status-toggle paid" style={{ cursor: 'default' }}>✓ payer</span>
+                    ) : (
                     <button
                       className={`status-toggle ${participant.paid ? 'paid' : 'unpaid'}`}
                       onClick={() => updateParticipant(participant.id, { paid: !participant.paid })}
                     >
                       {participant.paid ? '✓ paid' : 'unpaid'}
                     </button>
+                    )}
                     <button
                       className="press icon-button muted-text"
                       onClick={() => deleteParticipant(participant.id)}

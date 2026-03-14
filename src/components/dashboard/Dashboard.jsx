@@ -40,10 +40,9 @@ export default function Dashboard({ income, things, foodOrders }) {
       const split = participants.length + (iOrdered ? 1 : 0);
 
       if (hasPaidBy) {
-        // Third party paid: app owner owes the payer their share
+        // Third party paid: app owner still owes their share (counts as expense)
         const myShare = parseFloat(order.myFoodCost || 0) + (iOrdered && split > 0 ? fee / split : 0);
-        // This counts as a liability (subtracted from balance)
-        myFoodCost -= myShare; // negative value represents what app owner owes
+        myFoodCost += myShare;
       } else {
         // Normal case: count participant payments
         participants.forEach((participant) => {
