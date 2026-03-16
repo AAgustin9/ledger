@@ -129,6 +129,8 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .app-header-inner {
   margin: 0 auto;
+  width: 100%;
+  max-width: 1200px;
   display: flex;
   align-items: stretch;
 }
@@ -190,7 +192,10 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .app-main {
-  padding: 36px 48px 72px;
+  padding: 36px 48px 60px;
+  max-width: 1296px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .app-footer {
@@ -215,7 +220,7 @@ input[type="number"]::-webkit-inner-spin-button {
   outline: none;
   background: var(--color-bg);
   color: var(--color-text);
-  font-size: 15px;
+  font-size: 16px;
   transition: border-color 0.15s;
 }
 
@@ -455,7 +460,7 @@ input[type="number"]::-webkit-inner-spin-button {
 .form-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .flex-1 {
@@ -557,8 +562,8 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .month-row {
-  grid-template-columns: 28px 1fr 140px 42px;
-  padding: 13px 16px;
+  grid-template-columns: 28px 1fr 130px 56px;
+  padding: 12px 16px;
 }
 
 .food-order-card {
@@ -828,6 +833,10 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--color-text-muted);
 }
 
+.tone-owed {
+  color: var(--color-accent);
+}
+
 .danger-text {
   color: var(--color-red);
 }
@@ -838,16 +847,27 @@ input[type="number"]::-webkit-inner-spin-button {
 
 @media (max-width: 1100px) {
   .summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 820px) {
   .app-header,
-  .app-main,
   .app-footer {
     padding-left: 20px;
     padding-right: 20px;
+  }
+
+  .app-main {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 40px;
   }
 
   .app-header-inner {
@@ -884,8 +904,11 @@ input[type="number"]::-webkit-inner-spin-button {
     grid-template-columns: 1fr;
   }
 
-  .summary-grid,
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .month-row {
+    grid-template-columns: 24px 1fr 100px 52px;
   }
 }

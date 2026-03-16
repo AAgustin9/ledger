@@ -17,9 +17,31 @@ export default function Dashboard({ income, things, foodOrders }) {
     [income]
   );
   const totalThings = useMemo(
-    () => things.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0),
+    () =>
+      things.reduce((sum, item) => {
+        const amt = parseFloat(item.amount || 0);
+        if (item.groupBuy && item.participants?.length > 0) {
+          return sum + amt / (item.participants.length + 1);
+        }
+        return sum + amt;
+      }, 0),
     [things]
   );
+
+  const { thingsOwed, thingsCollected } = useMemo(() => {
+    let owed = 0;
+    let collected = 0;
+    things.forEach((item) => {
+      if (item.groupBuy && item.participants?.length > 0) {
+        const share = parseFloat(item.amount || 0) / (item.participants.length + 1);
+        item.participants.forEach((p) => {
+          if (p.paid) collected += share;
+          else owed += share;
+        });
+      }
+    });
+    return { thingsOwed: owed, thingsCollected: collected };
+  }, [things]);
 
   const { myFood, othersOwed, collected } = useMemo(() => {
     let myFoodCost = 0;
@@ -60,7 +82,9 @@ export default function Dashboard({ income, things, foodOrders }) {
     return { myFood: myFoodCost, othersOwed: owed, collected: paid };
   }, [foodOrders]);
 
-  const balance = totalIncome - totalThings - myFood + collected;
+  const totalOwed = othersOwed + thingsOwed;
+  const totalCollected = collected + thingsCollected;
+  const balance = totalIncome - totalThings - myFood + totalCollected;
   const spent = totalThings + myFood;
   const ratio = totalIncome > 0 ? Math.min(spent / totalIncome, 1) : 0;
   const ratioClass = ratio > 0.85 ? 'negative' : ratio > 0.6 ? 'accent' : 'positive';
@@ -81,8 +105,8 @@ export default function Dashboard({ income, things, foodOrders }) {
     if (item.label === 'Owed to You') {
       return {
         ...item,
-        value: othersOwed,
-        tone: othersOwed > 0 ? 'accent' : 'positive',
+        value: totalOwed,
+        tone: totalOwed > 0 ? 'accent' : 'positive',
       };
     }
 
@@ -90,7 +114,7 @@ export default function Dashboard({ income, things, foodOrders }) {
       ...item,
       value: balance,
       tone: balance >= 0 ? 'positive' : 'negative',
-      sub: collected > 0 ? `+${fmt(collected)} collected` : null,
+      sub: totalCollected > 0 ? `+${fmt(totalCollected)} collected` : null,
     };
   });
 
