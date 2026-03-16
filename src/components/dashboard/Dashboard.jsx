@@ -1,21 +1,15 @@
 import { useMemo } from 'react';
-import { TrendingUp, ShoppingBag, Utensils, Users } from 'lucide-react';
+import { ShoppingBag, Utensils, Users } from 'lucide-react';
 import { YEAR } from '../../constants/app';
 import { fmt } from '../../utils/ledger';
 
 const SUMMARY_ITEMS = [
-  { label: 'Income', icon: TrendingUp, tone: 'positive' },
   { label: 'Things', icon: ShoppingBag, tone: 'muted' },
   { label: 'Food (mine)', icon: Utensils, tone: 'muted' },
   { label: 'Owed to You', icon: Users, tone: 'owed' },
-  { label: 'Net Balance', tone: 'balance', big: true },
 ];
 
-export default function Dashboard({ income, things, foodOrders }) {
-  const totalIncome = useMemo(
-    () => income.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0),
-    [income]
-  );
+export default function Dashboard({ things, foodOrders }) {
   const totalThings = useMemo(
     () =>
       things.reduce((sum, item) => {
@@ -52,7 +46,6 @@ export default function Dashboard({ income, things, foodOrders }) {
       const hasPaidBy = !!order.paidBy;
 
       if (!hasPaidBy) {
-        // Normal case: app owner paid
         myFoodCost += parseFloat(order.myFoodCost || 0);
       }
 
@@ -62,14 +55,11 @@ export default function Dashboard({ income, things, foodOrders }) {
       const split = participants.length + (iOrdered ? 1 : 0);
 
       if (hasPaidBy) {
-        // Third party paid: app owner still owes their share (counts as expense)
         const myShare = parseFloat(order.myFoodCost || 0) + (iOrdered && split > 0 ? fee / split : 0);
         myFoodCost += myShare;
       } else {
-        // Normal case: count participant payments
         participants.forEach((participant) => {
           const participantOwes = parseFloat(participant.foodCost || 0) + fee / split;
-
           if (participant.paid) {
             paid += participantOwes;
           } else {
@@ -84,36 +74,18 @@ export default function Dashboard({ income, things, foodOrders }) {
 
   const totalOwed = othersOwed + thingsOwed;
   const totalCollected = collected + thingsCollected;
-  const balance = totalIncome - totalThings - myFood + totalCollected;
-  const spent = totalThings + myFood;
-  const ratio = totalIncome > 0 ? Math.min(spent / totalIncome, 1) : 0;
-  const ratioClass = ratio > 0.85 ? 'negative' : ratio > 0.6 ? 'accent' : 'positive';
 
   const cards = SUMMARY_ITEMS.map((item) => {
-    if (item.label === 'Income') {
-      return { ...item, value: totalIncome };
-    }
-
     if (item.label === 'Things') {
       return { ...item, value: totalThings };
     }
-
     if (item.label === 'Food (mine)') {
       return { ...item, value: myFood };
     }
-
-    if (item.label === 'Owed to You') {
-      return {
-        ...item,
-        value: totalOwed,
-        tone: totalOwed > 0 ? 'accent' : 'positive',
-      };
-    }
-
     return {
       ...item,
-      value: balance,
-      tone: balance >= 0 ? 'positive' : 'negative',
+      value: totalOwed,
+      tone: totalOwed > 0 ? 'accent' : 'positive',
       sub: totalCollected > 0 ? `+${fmt(totalCollected)} collected` : null,
     };
   });
@@ -121,7 +93,7 @@ export default function Dashboard({ income, things, foodOrders }) {
   return (
     <section className="dashboard-section">
       <div className="dashboard-heading">
-        <span className="dashboard-label">Financial Summary</span>
+        <span className="dashboard-label">Summary</span>
         <div className="divider-line" />
         <span className="mono dashboard-year">{YEAR}</span>
       </div>
@@ -139,20 +111,6 @@ export default function Dashboard({ income, things, foodOrders }) {
             {sub ? <div className="summary-card-sub">{sub}</div> : null}
           </div>
         ))}
-      </div>
-
-      <div>
-        <div className="ratio-header">
-          <span className="ratio-label">Spending Ratio</span>
-          <span className={`mono ratio-value tone-${ratioClass}`}>{(ratio * 100).toFixed(1)}% of income</span>
-        </div>
-        <div className="ratio-track">
-          <div className={`ratio-fill tone-${ratioClass}`} style={{ width: `${ratio * 100}%` }} />
-        </div>
-        <div className="mono ratio-scale">
-          <span>$0</span>
-          <span>{fmt(totalIncome)}</span>
-        </div>
       </div>
     </section>
   );

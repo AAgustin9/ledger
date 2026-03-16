@@ -18,7 +18,7 @@ export default function App() {
   const [income,     setIncome]     = useLocalStorage('ldgr_income', []);
   const [things,     setThings]     = useLocalStorage('ldgr_things', []);
   const [foodOrders, setFoodOrders] = useLocalStorage('ldgr_food',   []);
-  const [tab, setTab] = useState('income');
+  const [tab, setTab] = useState('things');
 
   const { status: syncStatus } = useCloudSync({
     session, income, things, foodOrders, setIncome, setThings, setFoodOrders,
@@ -44,9 +44,8 @@ export default function App() {
       />
 
       <main className="app-main">
-        <Dashboard income={income} things={things} foodOrders={foodOrders} />
+        <Dashboard things={things} foodOrders={foodOrders} />
 
-        {tab === 'income' ? <IncomeTracker income={income} setIncome={setIncome} /> : null}
         {tab === 'things' ? <ThingsPurchases things={things} setThings={setThings} /> : null}
         {tab === 'food'   ? <FoodOrders foodOrders={foodOrders} setFoodOrders={setFoodOrders} /> : null}
         {tab === 'chart'  ? <ChartTab things={things} foodOrders={foodOrders} /> : null}

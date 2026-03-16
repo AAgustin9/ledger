@@ -1,21 +1,21 @@
-import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2, Users } from 'lucide-react';
-import { MONTHS, YEAR } from '../../constants/app';
-import { fmt, today, uid } from '../../utils/ledger';
-import Button from '../ui/Button';
-import EmptyState from '../ui/EmptyState';
-import Input from '../ui/Input';
-import SectionHeader from '../ui/SectionHeader';
-import Select from '../ui/Select';
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, Plus, Trash2, Users } from "lucide-react";
+import { MONTHS, YEAR } from "../../constants/app";
+import { fmt, today, uid } from "../../utils/ledger";
+import Button from "../ui/Button";
+import EmptyState from "../ui/EmptyState";
+import Input from "../ui/Input";
+import SectionHeader from "../ui/SectionHeader";
+import Select from "../ui/Select";
 
 export default function ThingsPurchases({ things, setThings }) {
   const [month, setMonth] = useState(MONTHS[new Date().getMonth()]);
   const [day, setDay] = useState(String(new Date().getDate()));
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
   const [isGroupBuy, setIsGroupBuy] = useState(false);
   const [formParticipants, setFormParticipants] = useState([]);
-  const [newParticipantName, setNewParticipantName] = useState('');
+  const [newParticipantName, setNewParticipantName] = useState("");
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [expandedInputs, setExpandedInputs] = useState({});
 
@@ -28,7 +28,7 @@ export default function ThingsPurchases({ things, setThings }) {
         }
         return sum + amt;
       }, 0),
-    [things]
+    [things],
   );
 
   const byMonth = useMemo(() => {
@@ -41,7 +41,9 @@ export default function ThingsPurchases({ things, setThings }) {
     return groups;
   }, [things]);
 
-  const activeMonths = [...MONTHS].reverse().filter((item) => byMonth[item].length > 0);
+  const activeMonths = [...MONTHS]
+    .reverse()
+    .filter((item) => byMonth[item].length > 0);
 
   const addFormParticipant = () => {
     if (!newParticipantName.trim()) return;
@@ -49,7 +51,7 @@ export default function ThingsPurchases({ things, setThings }) {
       ...current,
       { id: uid(), name: newParticipantName.trim(), paid: false },
     ]);
-    setNewParticipantName('');
+    setNewParticipantName("");
   };
 
   const addThing = () => {
@@ -72,12 +74,12 @@ export default function ThingsPurchases({ things, setThings }) {
           : {}),
       },
     ]);
-    setTitle('');
-    setAmount('');
+    setTitle("");
+    setAmount("");
     setDay(String(new Date().getDate()));
     setIsGroupBuy(false);
     setFormParticipants([]);
-    setNewParticipantName('');
+    setNewParticipantName("");
   };
 
   const toggleExpand = (id) => {
@@ -90,25 +92,36 @@ export default function ThingsPurchases({ things, setThings }) {
   };
 
   const addParticipantToThing = (thingId) => {
-    const name = (expandedInputs[thingId] || '').trim();
+    const name = (expandedInputs[thingId] || "").trim();
     if (!name) return;
     setThings((current) =>
       current.map((t) =>
         t.id === thingId
-          ? { ...t, participants: [...(t.participants || []), { id: uid(), name, paid: false }] }
-          : t
-      )
+          ? {
+              ...t,
+              participants: [
+                ...(t.participants || []),
+                { id: uid(), name, paid: false },
+              ],
+            }
+          : t,
+      ),
     );
-    setExpandedInputs((prev) => ({ ...prev, [thingId]: '' }));
+    setExpandedInputs((prev) => ({ ...prev, [thingId]: "" }));
   };
 
   const removeParticipantFromThing = (thingId, participantId) => {
     setThings((current) =>
       current.map((t) =>
         t.id === thingId
-          ? { ...t, participants: (t.participants || []).filter((p) => p.id !== participantId) }
-          : t
-      )
+          ? {
+              ...t,
+              participants: (t.participants || []).filter(
+                (p) => p.id !== participantId,
+              ),
+            }
+          : t,
+      ),
     );
   };
 
@@ -119,20 +132,28 @@ export default function ThingsPurchases({ things, setThings }) {
           ? {
               ...t,
               participants: t.participants.map((p) =>
-                p.id === participantId ? { ...p, paid: !p.paid } : p
+                p.id === participantId ? { ...p, paid: !p.paid } : p,
               ),
             }
-          : t
-      )
+          : t,
+      ),
     );
   };
 
   return (
     <section className="fade-in">
-      <SectionHeader title="Things" badge={`${things.length} purchases`} total={total} />
+      <SectionHeader
+        title="Things"
+        badge={`${things.length} purchases`}
+        total={total}
+      />
 
       <div className="form-row">
-        <Select value={month} onChange={(event) => setMonth(event.target.value)} style={{ width: 90 }}>
+        <Select
+          value={month}
+          onChange={(event) => setMonth(event.target.value)}
+          style={{ width: 90 }}
+        >
           {MONTHS.map((item) => (
             <option key={item}>{item}</option>
           ))}
@@ -144,7 +165,7 @@ export default function ThingsPurchases({ things, setThings }) {
           min={1}
           max={31}
           onChange={(event) => setDay(event.target.value)}
-          onKeyDown={(event) => event.key === 'Enter' && addThing()}
+          onKeyDown={(event) => event.key === "Enter" && addThing()}
           style={{ width: 72 }}
         />
         <Input
@@ -152,7 +173,7 @@ export default function ThingsPurchases({ things, setThings }) {
           placeholder="What did you buy?"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          onKeyDown={(event) => event.key === 'Enter' && addThing()}
+          onKeyDown={(event) => event.key === "Enter" && addThing()}
         />
         <Input
           className="flex-1"
@@ -160,7 +181,7 @@ export default function ThingsPurchases({ things, setThings }) {
           type="number"
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
-          onKeyDown={(event) => event.key === 'Enter' && addThing()}
+          onKeyDown={(event) => event.key === "Enter" && addThing()}
         />
         <Button onClick={addThing}>
           <Plus size={15} />
@@ -170,8 +191,8 @@ export default function ThingsPurchases({ things, setThings }) {
 
       <label
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 8,
           marginTop: 8,
           marginBottom: isGroupBuy ? 8 : 0,
@@ -184,12 +205,14 @@ export default function ThingsPurchases({ things, setThings }) {
             setIsGroupBuy(e.target.checked);
             if (!e.target.checked) {
               setFormParticipants([]);
-              setNewParticipantName('');
+              setNewParticipantName("");
             }
           }}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
         />
-        <span className="field-label">Group buy (I paid, split with others)</span>
+        <span className="field-label">
+          Group buy (I paid, split with others)
+        </span>
       </label>
 
       {isGroupBuy && (
@@ -199,19 +222,29 @@ export default function ThingsPurchases({ things, setThings }) {
               {formParticipants.map((p) => (
                 <div
                   key={p.id}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "4px 0",
+                  }}
                 >
-                  <Users size={13} style={{ color: 'var(--color-text-dim)' }} />
+                  <Users size={13} style={{ color: "var(--color-text-dim)" }} />
                   <span style={{ flex: 1, fontSize: 13 }}>{p.name}</span>
                   {amount && (
-                    <span className="mono" style={{ fontSize: 12, color: 'var(--color-text-dim)' }}>
+                    <span
+                      className="mono"
+                      style={{ fontSize: 12, color: "var(--color-text-dim)" }}
+                    >
                       {fmt(parseFloat(amount) / (formParticipants.length + 1))}
                     </span>
                   )}
                   <button
                     className="press icon-button muted-text"
                     onClick={() =>
-                      setFormParticipants((curr) => curr.filter((x) => x.id !== p.id))
+                      setFormParticipants((curr) =>
+                        curr.filter((x) => x.id !== p.id),
+                      )
                     }
                   >
                     <Trash2 size={13} />
@@ -219,8 +252,15 @@ export default function ThingsPurchases({ things, setThings }) {
                 </div>
               ))}
               {amount && (
-                <div style={{ fontSize: 12, color: 'var(--color-text-dim)', marginTop: 4 }}>
-                  Your share: {fmt(parseFloat(amount) / (formParticipants.length + 1))} · ÷
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--color-text-dim)",
+                    marginTop: 4,
+                  }}
+                >
+                  Your share:{" "}
+                  {fmt(parseFloat(amount) / (formParticipants.length + 1))} · ÷
                   {formParticipants.length + 1} ways
                 </div>
               )}
@@ -232,7 +272,7 @@ export default function ThingsPurchases({ things, setThings }) {
               placeholder="Add participant…"
               value={newParticipantName}
               onChange={(e) => setNewParticipantName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addFormParticipant()}
+              onKeyDown={(e) => e.key === "Enter" && addFormParticipant()}
             />
             <Button onClick={addFormParticipant} variant="ghost">
               <Plus size={15} />
@@ -267,8 +307,11 @@ export default function ThingsPurchases({ things, setThings }) {
                 {[...entries]
                   .sort((a, b) => parseInt(b.day || 0) - parseInt(a.day || 0))
                   .map((entry, index) => {
-                    const isGroupBuyEntry = entry.groupBuy && entry.participants?.length > 0;
-                    const split = isGroupBuyEntry ? entry.participants.length + 1 : 1;
+                    const isGroupBuyEntry =
+                      entry.groupBuy && entry.participants?.length > 0;
+                    const split = isGroupBuyEntry
+                      ? entry.participants.length + 1
+                      : 1;
                     const myShare = parseFloat(entry.amount || 0) / split;
                     const isExpanded = expandedIds.has(entry.id);
                     const unpaidParticipants = isGroupBuyEntry
@@ -280,51 +323,72 @@ export default function ThingsPurchases({ things, setThings }) {
                         key={entry.id}
                         className="fade-in"
                         style={{
-                          borderTop: index > 0 ? '1px solid var(--color-border)' : 'none',
+                          borderTop:
+                            index > 0
+                              ? "1px solid var(--color-border)"
+                              : "none",
                         }}
                       >
                         <div className="row-item month-row">
                           <span
                             className="mono"
-                            style={{ fontSize: 13, color: 'var(--color-text-dim)' }}
+                            style={{
+                              fontSize: 13,
+                              color: "var(--color-text-dim)",
+                            }}
                           >
-                            {entry.day || ''}
+                            {entry.day || ""}
                           </span>
-                          <span className="row-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span
+                            className="row-title"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
                             {entry.title}
                             {isGroupBuyEntry && (
                               <span
                                 style={{
                                   fontSize: 11,
-                                  color: 'var(--color-text-dim)',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
+                                  color: "var(--color-text-dim)",
+                                  display: "inline-flex",
+                                  alignItems: "center",
                                   gap: 2,
                                   flexShrink: 0,
                                 }}
                               >
-                                <Users size={11} />
-                                ÷{split}
+                                <Users size={11} />÷{split}
                               </span>
                             )}
                           </span>
                           <span className="mono month-row-amount">
                             {fmt(isGroupBuyEntry ? myShare : entry.amount)}
                           </span>
-                          <div className="row-action" style={{ display: 'flex', gap: 4 }}>
+                          <div
+                            className="row-action"
+                            style={{ display: "flex", gap: 4 }}
+                          >
                             {isGroupBuyEntry && (
                               <button
                                 className="press icon-button muted-text"
                                 onClick={() => toggleExpand(entry.id)}
                               >
-                                {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                                {isExpanded ? (
+                                  <ChevronUp size={15} />
+                                ) : (
+                                  <ChevronDown size={15} />
+                                )}
                               </button>
                             )}
                             <button
                               className="del-btn press icon-button danger-text"
                               onClick={() =>
                                 setThings((current) =>
-                                  current.filter((thing) => thing.id !== entry.id)
+                                  current.filter(
+                                    (thing) => thing.id !== entry.id,
+                                  ),
                                 )
                               }
                             >
@@ -337,73 +401,89 @@ export default function ThingsPurchases({ things, setThings }) {
                           <div
                             className="fade-in"
                             style={{
-                              padding: '8px 12px 12px',
-                              background: 'rgba(0,0,0,0.02)',
+                              padding: "8px 12px 12px",
+                              background: "rgba(0,0,0,0.02)",
                             }}
                           >
                             <div
                               style={{
                                 fontSize: 12,
-                                color: 'var(--color-text-dim)',
+                                color: "var(--color-text-dim)",
                                 marginBottom: 8,
                               }}
                             >
-                              Total: {fmt(entry.amount)} · ÷{split} = {fmt(myShare)} each
+                              Total: {fmt(entry.amount)} · ÷{split} ={" "}
+                              {fmt(myShare)} each
                             </div>
                             {entry.participants.map((p) => (
                               <div
                                 key={p.id}
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
+                                  display: "flex",
+                                  alignItems: "center",
                                   gap: 8,
-                                  padding: '4px 0',
+                                  padding: "4px 0",
                                 }}
                               >
-                                <Users size={12} style={{ color: 'var(--color-text-dim)' }} />
+                                <Users
+                                  size={12}
+                                  style={{ color: "var(--color-text-dim)" }}
+                                />
                                 <span
                                   style={{
                                     flex: 1,
                                     fontSize: 13,
-                                    color: p.paid ? 'var(--color-text-dim)' : 'inherit',
-                                    textDecoration: p.paid ? 'line-through' : 'none',
+                                    color: p.paid
+                                      ? "var(--color-text-dim)"
+                                      : "inherit",
+                                    textDecoration: p.paid
+                                      ? "line-through"
+                                      : "none",
                                   }}
                                 >
                                   {p.name}
                                 </span>
                                 <span
                                   className="mono"
-                                  style={{ fontSize: 12, color: 'var(--color-text-dim)' }}
+                                  style={{
+                                    fontSize: 12,
+                                    color: "var(--color-text-dim)",
+                                  }}
                                 >
                                   {fmt(myShare)}
                                 </span>
                                 <button
-                                  className={`status-toggle ${p.paid ? 'paid' : 'unpaid'}`}
-                                  onClick={() => toggleParticipantPaid(entry.id, p.id)}
+                                  className={`status-toggle ${p.paid ? "paid" : "unpaid"}`}
+                                  onClick={() =>
+                                    toggleParticipantPaid(entry.id, p.id)
+                                  }
                                 >
-                                  {p.paid ? '✓ paid' : 'unpaid'}
+                                  {p.paid ? "✓ paid" : "unpaid"}
                                 </button>
                                 <button
                                   className="press icon-button muted-text"
-                                  onClick={() => removeParticipantFromThing(entry.id, p.id)}
+                                  onClick={() =>
+                                    removeParticipantFromThing(entry.id, p.id)
+                                  }
                                 >
                                   <Trash2 size={13} />
                                 </button>
                               </div>
                             ))}
-                            {unpaidParticipants.length === 0 && entry.participants.length > 0 && (
-                              <div
-                                style={{ fontSize: 12, marginTop: 4 }}
-                                className="positive-text"
-                              >
-                                ✓ all settled
-                              </div>
-                            )}
+                            {unpaidParticipants.length === 0 &&
+                              entry.participants.length > 0 && (
+                                <div
+                                  style={{ fontSize: 12, marginTop: 4 }}
+                                  className="positive-text"
+                                >
+                                  ✓ all settled
+                                </div>
+                              )}
                             <div className="form-row" style={{ marginTop: 8 }}>
                               <Input
                                 className="flex-1"
                                 placeholder="Add participant…"
-                                value={expandedInputs[entry.id] || ''}
+                                value={expandedInputs[entry.id] || ""}
                                 onChange={(e) =>
                                   setExpandedInputs((prev) => ({
                                     ...prev,
@@ -411,7 +491,8 @@ export default function ThingsPurchases({ things, setThings }) {
                                   }))
                                 }
                                 onKeyDown={(e) =>
-                                  e.key === 'Enter' && addParticipantToThing(entry.id)
+                                  e.key === "Enter" &&
+                                  addParticipantToThing(entry.id)
                                 }
                               />
                               <Button
