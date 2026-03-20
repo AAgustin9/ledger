@@ -6,6 +6,7 @@ import { fmt } from '../../utils/ledger';
 const SUMMARY_ITEMS = [
   { label: 'Things', icon: ShoppingBag, tone: 'muted' },
   { label: 'Food (mine)', icon: Utensils, tone: 'muted' },
+  { label: 'Food (total)', icon: Utensils, tone: 'muted' },
   { label: 'Owed to You', icon: Users, tone: 'owed' },
 ];
 
@@ -37,7 +38,7 @@ export default function Dashboard({ things, foodOrders }) {
     return { thingsOwed: owed, thingsCollected: collected };
   }, [things]);
 
-  const { myFood, othersOwed, collected } = useMemo(() => {
+  const { myFood, othersOwed, collected, totalFood } = useMemo(() => {
     let myFoodCost = 0;
     let owed = 0;
     let paid = 0;
@@ -69,7 +70,15 @@ export default function Dashboard({ things, foodOrders }) {
       }
     });
 
-    return { myFood: myFoodCost, othersOwed: owed, collected: paid };
+    const totalFood = foodOrders.reduce((sum, order) => {
+      const orderTotal =
+        parseFloat(order.myFoodCost || 0) +
+        (order.participants || []).reduce((s, p) => s + parseFloat(p.foodCost || 0), 0) +
+        parseFloat(order.deliveryFee || 0);
+      return sum + orderTotal;
+    }, 0);
+
+    return { myFood: myFoodCost, othersOwed: owed, collected: paid, totalFood };
   }, [foodOrders]);
 
   const totalOwed = othersOwed + thingsOwed;
@@ -81,6 +90,9 @@ export default function Dashboard({ things, foodOrders }) {
     }
     if (item.label === 'Food (mine)') {
       return { ...item, value: myFood };
+    }
+    if (item.label === 'Food (total)') {
+      return { ...item, value: totalFood };
     }
     return {
       ...item,
