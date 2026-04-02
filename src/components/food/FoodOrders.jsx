@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
+import { MONTHS, YEAR } from '../../constants/app';
 import Button from '../ui/Button';
 import EmptyState from '../ui/EmptyState';
 import SectionHeader from '../ui/SectionHeader';
@@ -32,6 +33,17 @@ export default function FoodOrders({ foodOrders, setFoodOrders }) {
     [foodOrders]
   );
 
+  const byMonth = useMemo(() => {
+    const groups = Object.fromEntries(MONTHS.map((m) => [m, []]));
+    foodOrders.forEach((order) => {
+      const m = order.month || MONTHS[new Date(order.date).getMonth()];
+      if (groups[m]) groups[m].push(order);
+    });
+    return groups;
+  }, [foodOrders]);
+
+  const activeMonths = [...MONTHS].reverse().filter((m) => byMonth[m].length > 0);
+
   const addOrder = () => {
     const newId = uid();
     setFoodOrders((current) => [
@@ -39,6 +51,8 @@ export default function FoodOrders({ foodOrders, setFoodOrders }) {
         id: newId,
         date: today(),
         day: String(new Date().getDate()),
+        month: MONTHS[new Date().getMonth()],
+        year: YEAR,
         totalAmount: '',
         myFoodCost: '',
         deliveryFee: '',
@@ -76,18 +90,39 @@ export default function FoodOrders({ foodOrders, setFoodOrders }) {
       {foodOrders.length === 0 ? (
         <EmptyState text="No food orders yet." />
       ) : (
-        [...foodOrders]
-          .sort((a, b) => parseInt(b.day || 0) - parseInt(a.day || 0))
-          .map((order) => (
-          <FoodOrderCard
-            key={order.id}
-            order={order}
-            isOpen={openId === order.id}
-            onToggle={toggleOpen}
-            onUpdate={updateOrder}
-            onDelete={deleteOrder}
-          />
-        ))
+        <div className="stack-list">
+          {activeMonths.map((month) => {
+            const entries = byMonth[month];
+            const subtotal = entries.reduce((sum, order) => {
+              const fee = parseFloat(order.deliveryFee || 0);
+              const participants = order.participants || [];
+              const split = participants.length + (parseFloat(order.myFoodCost || 0) > 0 ? 1 : 0);
+              const myDeliveryShare = split > 0 ? fee / split : 0;
+              return sum + parseFloat(order.myFoodCost || 0) + myDeliveryShare;
+            }, 0);
+
+            return (
+              <div key={month} className="month-card">
+                <div className="month-card-header">
+                  <span className="month-card-title">{month} {YEAR}</span>
+                  <span className="mono month-card-total">{subtotal > 0 ? subtotal.toFixed(2) : '—'}</span>
+                </div>
+                {[...entries]
+                  .sort((a, b) => parseInt(b.day || 0) - parseInt(a.day || 0))
+                  .map((order) => (
+                    <FoodOrderCard
+                      key={order.id}
+                      order={order}
+                      isOpen={openId === order.id}
+                      onToggle={toggleOpen}
+                      onUpdate={updateOrder}
+                      onDelete={deleteOrder}
+                    />
+                  ))}
+              </div>
+            );
+          })}
+        </div>
       )}
     </section>
   );

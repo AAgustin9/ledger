@@ -1,8 +1,10 @@
 import { useState } from 'react'; // useState kept for newName
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { MONTHS } from '../../constants/app';
 import { daysSince, fmt, uid } from '../../utils/ledger';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import Select from '../ui/Select';
 import TableHead from '../ui/TableHead';
 
 export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDelete }) {
@@ -78,7 +80,7 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
         <div className="food-order-header-main">
           <div className="food-order-header-top">
             <span className="mono row-date">
-              {order.day ? `Day ${order.day}` : order.date}
+              {order.month ? `${order.month} ${order.day || ''}`.trim() : order.day ? `Day ${order.day}` : order.date}
             </span>
             {hasAlert ? (
               <span className="stale-badge">{daysSince(order.date)}d unpaid</span>
@@ -125,6 +127,17 @@ export default function FoodOrderCard({ order, isOpen, onToggle, onUpdate, onDel
           </label>
 
           <div className="food-order-fields">
+            <label className="field-group">
+              <span className="field-label">Month</span>
+              <Select
+                value={order.month || MONTHS[new Date().getMonth()]}
+                onChange={(event) => patchOrder({ month: event.target.value })}
+              >
+                {MONTHS.map((m) => (
+                  <option key={m}>{m}</option>
+                ))}
+              </Select>
+            </label>
             <label className="field-group">
               <span className="field-label">Day</span>
               <Input
