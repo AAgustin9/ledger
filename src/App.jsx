@@ -10,6 +10,7 @@ import IncomeTracker from './components/income/IncomeTracker';
 import ThingsPurchases from './components/things/ThingsPurchases';
 import FoodOrders from './components/food/FoodOrders';
 import ChartTab from './components/chart/ChartTab';
+import OwesTab from './components/owes/OwesTab';
 import LoginScreen from './components/auth/LoginScreen';
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
 
         {tab === 'things' ? <ThingsPurchases things={things} setThings={setThings} /> : null}
         {tab === 'food'   ? <FoodOrders foodOrders={foodOrders} setFoodOrders={setFoodOrders} /> : null}
+        {tab === 'owes'   ? <OwesTab things={things} foodOrders={foodOrders} /> : null}
         {tab === 'chart'  ? <ChartTab things={things} foodOrders={foodOrders} /> : null}
       </main>
 

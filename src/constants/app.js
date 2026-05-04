@@ -5,5 +5,6 @@ export const YEAR = new Date().getFullYear();
 export const TABS = [
   { id: 'things', label: 'Things' },
   { id: 'food', label: 'Food' },
+  { id: 'owes', label: 'Owes' },
   { id: 'chart', label: 'Chart' },
 ];

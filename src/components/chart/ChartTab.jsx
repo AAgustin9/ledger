@@ -7,6 +7,36 @@ import EmptyState from '../ui/EmptyState';
 import SectionHeader from '../ui/SectionHeader';
 import StatPill from '../ui/StatPill';
 
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  const things = payload.find((p) => p.dataKey === 'things')?.value ?? 0;
+  const food = payload.find((p) => p.dataKey === 'food')?.value ?? 0;
+  const total = things + food;
+  return (
+    <div style={{
+      background: 'var(--color-card)', border: '1px solid var(--color-border)',
+      borderRadius: 3, fontFamily: 'var(--font-mono)', fontSize: 13, padding: '8px 12px',
+      minWidth: 160,
+    }}>
+      <div style={{ color: 'var(--color-accent)', letterSpacing: '1px', fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ color: 'var(--color-text-dim)' }}>Things</span>
+          <span style={{ color: 'var(--color-accent-dim)' }}>{fmt(things)}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ color: 'var(--color-text-dim)' }}>Food</span>
+          <span style={{ color: 'var(--color-accent)' }}>{fmt(food)}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderTop: '1px solid var(--color-border)', marginTop: 3, paddingTop: 4 }}>
+          <span style={{ color: 'var(--color-text)', fontWeight: 700 }}>Total</span>
+          <span style={{ color: 'var(--color-text)', fontWeight: 700 }}>{fmt(total)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ChartTab({ things, foodOrders }) {
   const data = useMemo(
     () =>
@@ -79,18 +109,7 @@ export default function ChartTab({ things, foodOrders }) {
                   tickFormatter={(value) => `$${value}`}
                   width={52}
                 />
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--color-card)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 3,
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 13,
-                  }}
-                  labelStyle={{ color: 'var(--color-accent)', letterSpacing: '1px', fontWeight: 700 }}
-                  itemStyle={{ color: 'var(--color-text)' }}
-                  formatter={(value) => [fmt(value)]}
-                />
+                <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="things" name="Things" stackId="a" fill="var(--color-accent-dim)" />
                 <Bar dataKey="food" name="Food" stackId="a" fill="var(--color-accent)" radius={[2, 2, 0, 0]} />
               </BarChart>
