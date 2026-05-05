@@ -400,6 +400,115 @@ input[type="number"]::-webkit-inner-spin-button {
   gap: 5px;
 }
 
+.summary-card-pressable {
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+}
+
+.summary-card-pressable:hover {
+  background: var(--color-card-hover);
+  border-color: var(--color-border-light);
+}
+
+.summary-card-pressable:active {
+  transform: scale(0.97);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 400px;
+  margin: 20px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 6px;
+  background: var(--color-card);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.modal-close:hover {
+  color: var(--color-text);
+}
+
+.modal-body {
+  padding: 8px 0;
+}
+
+.modal-empty {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--color-text-dim);
+}
+
+.modal-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-row:last-child {
+  border-bottom: none;
+}
+
+.modal-row-month {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.modal-row-count {
+  font-size: 12px;
+  color: var(--color-text-dim);
+}
+
+.modal-row-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
 .summary-card-label {
   display: flex;
   align-items: center;

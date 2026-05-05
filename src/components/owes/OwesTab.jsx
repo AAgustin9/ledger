@@ -51,7 +51,9 @@ export default function OwesTab({ things, foodOrders }) {
       });
     });
 
-    return Object.values(map).sort((a, b) => b.outstanding - a.outstanding || b.total - a.total);
+    return Object.values(map)
+      .filter((d) => d.outstanding > 0)
+      .sort((a, b) => b.outstanding - a.outstanding);
   }, [things, foodOrders]);
 
   const totalOutstanding = debtors.reduce((s, d) => s + d.outstanding, 0);
@@ -76,8 +78,6 @@ export default function OwesTab({ things, foodOrders }) {
           {debtors.map((d) => {
             const key = d.displayName.toLowerCase();
             const isExpanded = expandedNames.has(key);
-            const allSettled = d.outstanding <= 0 && d.total > 0;
-
             return (
               <div key={key} className="month-card">
                 <div
@@ -87,16 +87,9 @@ export default function OwesTab({ things, foodOrders }) {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
                     <span className="month-card-title">{d.displayName}</span>
-                    {allSettled ? (
-                      <span className="positive-text" style={{ fontSize: 11 }}>✓ settled</span>
-                    ) : d.outstanding > 0 ? (
-                      <span className="accent-text" style={{ fontSize: 11, fontFamily: "'Courier New', monospace" }}>
-                        {fmt(d.outstanding)} outstanding
-                      </span>
-                    ) : null}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span className="mono month-card-total">{fmt(d.total)}</span>
+                    <span className="mono month-card-total">{fmt(d.outstanding)}</span>
                     <span className="muted-text">
                       {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                     </span>
@@ -105,17 +98,11 @@ export default function OwesTab({ things, foodOrders }) {
 
                 {isExpanded && (
                   <div className="fade-in" style={{ padding: '0 0 10px' }}>
-                    {d.paid > 0 && (
-                      <div style={{ padding: '4px 16px 8px', fontSize: 12, color: 'var(--color-text-dim)', display: 'flex', gap: 16 }}>
-                        <span>Paid: <span className="mono positive-text">{fmt(d.paid)}</span></span>
-                        {d.outstanding > 0 && <span>Outstanding: <span className="mono accent-text">{fmt(d.outstanding)}</span></span>}
-                      </div>
-                    )}
-                    {d.items.map((item, i) => (
+                    {d.items.filter((item) => !item.paid).map((item, i) => (
                       <div
                         key={i}
                         className="row-item month-row"
-                        style={{ borderTop: i === 0 ? '1px solid var(--color-border)' : '1px solid var(--color-border)', opacity: item.paid ? 0.5 : 1 }}
+                        style={{ borderTop: '1px solid var(--color-border)' }}
                       >
                         <span style={{ color: 'var(--color-text-dim)', display: 'flex', alignItems: 'center' }}>
                           {item.type === 'food' ? <Utensils size={12} /> : <Users size={12} />}
@@ -123,15 +110,10 @@ export default function OwesTab({ things, foodOrders }) {
                         <span className="mono" style={{ fontSize: 12, color: 'var(--color-text-dim)', minWidth: 48 }}>
                           {item.month && item.day ? `${item.month} ${item.day}` : item.month || ''}
                         </span>
-                        <span className="row-title" style={{ textDecoration: item.paid ? 'line-through' : 'none' }}>
-                          {item.label}
-                        </span>
-                        <span className="mono month-row-amount" style={{ color: item.paid ? 'var(--color-text-dim)' : 'var(--color-accent)' }}>
+                        <span className="row-title">{item.label}</span>
+                        <span className="mono month-row-amount" style={{ color: 'var(--color-accent)' }}>
                           {fmt(item.amount)}
                         </span>
-                        {item.paid && (
-                          <span className="positive-text" style={{ fontSize: 11 }}>✓</span>
-                        )}
                       </div>
                     ))}
                   </div>

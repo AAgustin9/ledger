@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { ShoppingBag, Utensils, Users } from 'lucide-react';
-import { YEAR } from '../../constants/app';
+import { useMemo, useState } from 'react';
+import { ShoppingBag, Utensils, Users, X } from 'lucide-react';
+import { MONTHS, YEAR } from '../../constants/app';
 import { fmt } from '../../utils/ledger';
 
 const SUMMARY_ITEMS = [
@@ -11,6 +11,7 @@ const SUMMARY_ITEMS = [
 ];
 
 export default function Dashboard({ things, foodOrders }) {
+  const [showFoodModal, setShowFoodModal] = useState(false);
   const totalThings = useMemo(
     () =>
       things.reduce((sum, item) => {
@@ -81,6 +82,24 @@ export default function Dashboard({ things, foodOrders }) {
     return { myFood: myFoodCost, othersOwed: owed, collected: paid, totalFood };
   }, [foodOrders]);
 
+  const myFoodByMonth = useMemo(() => {
+    return MONTHS.map((month) => {
+      const orders = foodOrders.filter((o) => (o.month || MONTHS[new Date(o.date).getMonth()]) === month);
+      const total = orders.reduce((sum, order) => {
+        const hasPaidBy = !!order.paidBy;
+        const fee = parseFloat(order.deliveryFee || 0);
+        const participants = order.participants || [];
+        const iOrdered = parseFloat(order.myFoodCost || 0) > 0;
+        const split = participants.length + (iOrdered ? 1 : 0);
+        if (hasPaidBy) {
+          return sum + parseFloat(order.myFoodCost || 0) + (iOrdered && split > 0 ? fee / split : 0);
+        }
+        return sum + parseFloat(order.myFoodCost || 0);
+      }, 0);
+      return { month, total, count: orders.length };
+    }).filter((m) => m.count > 0);
+  }, [foodOrders]);
+
   const totalOwed = othersOwed + thingsOwed;
   const totalCollected = collected + thingsCollected;
 
@@ -111,19 +130,52 @@ export default function Dashboard({ things, foodOrders }) {
       </div>
 
       <div className="summary-grid">
-        {cards.map(({ label, value, icon: Icon, tone, big, sub }) => (
-          <div key={label} className="summary-card">
-            <div className="summary-card-label">
-              {Icon ? <Icon size={13} /> : null}
-              {label}
+        {cards.map(({ label, value, icon: Icon, tone, big, sub }) => {
+          const isFood = label === 'Food (mine)';
+          return (
+            <div
+              key={label}
+              className={`summary-card${isFood ? ' summary-card-pressable' : ''}`}
+              onClick={isFood ? () => setShowFoodModal(true) : undefined}
+            >
+              <div className="summary-card-label">
+                {Icon ? <Icon size={13} /> : null}
+                {label}
+              </div>
+              <div className={`mono summary-card-value ${big ? 'is-big' : ''} tone-${tone}`}>
+                {fmt(value)}
+              </div>
+              {sub ? <div className="summary-card-sub">{sub}</div> : null}
             </div>
-            <div className={`mono summary-card-value ${big ? 'is-big' : ''} tone-${tone}`}>
-              {fmt(value)}
-            </div>
-            {sub ? <div className="summary-card-sub">{sub}</div> : null}
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {showFoodModal && (
+        <div className="modal-overlay" onClick={() => setShowFoodModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">Food (mine) by month</span>
+              <button className="modal-close" onClick={() => setShowFoodModal(false)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="modal-body">
+              {myFoodByMonth.length === 0 ? (
+                <div className="modal-empty">No food orders yet.</div>
+              ) : (
+                myFoodByMonth.map(({ month, total, count }) => (
+                  <div key={month} className="modal-row">
+                    <span className="modal-row-month">{month} {YEAR}</span>
+                    <span className="modal-row-count">{count} order{count !== 1 ? 's' : ''}</span>
+                    <span className="mono modal-row-amount">{fmt(total)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
