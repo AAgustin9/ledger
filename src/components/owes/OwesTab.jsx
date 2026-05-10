@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Users, Utensils } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Check, Users, Utensils } from 'lucide-react';
 import { fmt } from '../../utils/ledger';
 import EmptyState from '../ui/EmptyState';
 import SectionHeader from '../ui/SectionHeader';
@@ -58,6 +58,18 @@ export default function OwesTab({ things, foodOrders }) {
 
   const totalOutstanding = debtors.reduce((s, d) => s + d.outstanding, 0);
 
+  const [copiedName, setCopiedName] = useState(null);
+
+  const copyDebtor = (e, d) => {
+    e.stopPropagation();
+    const unpaid = d.items.filter((i) => !i.paid);
+    const items = unpaid.map((i) => `${i.label} ${fmt(i.amount)}`).join(', ');
+    const text = `${fmt(d.outstanding)}${items ? ` (${items})` : ''}`;
+    navigator.clipboard.writeText(text);
+    setCopiedName(d.displayName);
+    setTimeout(() => setCopiedName(null), 1500);
+  };
+
   const toggleExpand = (name) => {
     setExpandedNames((prev) => {
       const next = new Set(prev);
@@ -90,6 +102,14 @@ export default function OwesTab({ things, foodOrders }) {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span className="mono month-card-total">{fmt(d.outstanding)}</span>
+                    <span
+                      onClick={(e) => copyDebtor(e, d)}
+                      className="muted-text"
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      title="Copy amount + items"
+                    >
+                      {copiedName === d.displayName ? <Check size={14} /> : <Copy size={14} />}
+                    </span>
                     <span className="muted-text">
                       {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                     </span>
